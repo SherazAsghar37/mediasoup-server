@@ -5,8 +5,8 @@ const createSendTransportChannel: string = "request:create-send-transport";
 const createRecvTransportChannel: string = "request:create-recv-transport";
 
 const connectTransportChannel: string = "request:connect-transport";
-const transportProducerChannel: string = "request:transport-producer";
-const transportConsumerChannel: string = "request:transport-consumer";
+const createProducerChannel: string = "request:create-producer";
+const createConsumerChannel: string = "request:create-consumer";
 
 const pauseChannel: string = "request:pause";
 const resumeChannel: string = "request:resume";
@@ -18,16 +18,16 @@ const responseCreateSendTransportChannel: string =
 const responseCreateRecvTransportChannel: string =
   "response:create-recv-transport";
 const responseConnectTransportChannel: string = "response:connect-transport";
-const responseTransportProducerChannel: string = "response:transport-producer";
-const responseTransportConsumerChannel: string = "response:transport-consumer";
+const responseCreateProducerChannel: string = "response:create-producer";
+const responseCreateConsumerChannel: string = "response:create-consumer";
 
 export {
   createRouterChannel,
   createSendTransportChannel,
   createRecvTransportChannel,
   connectTransportChannel,
-  transportProducerChannel,
-  transportConsumerChannel,
+  createProducerChannel,
+  createConsumerChannel,
   pauseChannel,
   resumeChannel,
   getRouterRtpCapabilitiesChannel,
@@ -35,6 +35,6 @@ export {
   responseCreateSendTransportChannel,
   responseCreateRecvTransportChannel,
   responseConnectTransportChannel,
-  responseTransportProducerChannel,
-  responseTransportConsumerChannel,
+  responseCreateProducerChannel,
+  responseCreateConsumerChannel,
 };

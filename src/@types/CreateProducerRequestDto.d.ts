@@ -1,10 +1,11 @@
 import { MediaKind } from "mediasoup/types";
 
-interface CreateTransportProducerRequestDto {
+interface CreateProducerRequestDto {
   roomId: string;
   userId: string;
   transportId: string;
-  kind: string;
+  kind: any;
   rtpParameters: string;
   sessionId: string;
+  appData: string;
 }

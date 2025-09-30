@@ -1,4 +1,5 @@
 interface CreateRecvTransportRequestDto {
-    roomId: string;
-    userId: string;
+  roomId: string;
+  userId: string;
+  sessionId: string;
 }
