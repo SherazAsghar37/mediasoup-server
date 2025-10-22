@@ -10,6 +10,8 @@ const createConsumerChannel: string = "request:create-consumer";
 
 const pauseChannel: string = "request:pause";
 const resumeChannel: string = "request:resume";
+const userDisconnectChannel: string = "request:user-disconnect";
+const sessionEndChannel: string = "request:session-end";
 
 const responseGetRTPCapabilitiesChannel: string =
   "response:get-router-rtp-capabilities";
@@ -30,6 +32,8 @@ export {
   createConsumerChannel,
   pauseChannel,
   resumeChannel,
+  userDisconnectChannel,
+  sessionEndChannel,
   getRouterRtpCapabilitiesChannel,
   responseGetRTPCapabilitiesChannel,
   responseCreateSendTransportChannel,

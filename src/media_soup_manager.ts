@@ -9,6 +9,7 @@ import {
   Transport,
   Worker,
 } from "mediasoup/types";
+import { create } from "domain";
 
 interface TransportInfo {
   id: string;
@@ -336,10 +337,14 @@ class MediaSoupManager {
     }
   }
 
-  getRouterCapabilities(
+  async getRouterCapabilities(
     roomId: string
-  ): mediasoup.types.RtpCapabilities | undefined {
+  ): Promise<mediasoup.types.RtpCapabilities | undefined> {
     try {
+      const capabilities = this.routers.get(roomId)?.rtpCapabilities;
+      if (!capabilities) {
+        await this.createRouter(roomId);
+      }
       return this.routers.get(roomId)?.rtpCapabilities;
     } catch (error) {
       console.error("Error getting router capabilities:", error);
@@ -436,10 +441,8 @@ class MediaSoupManager {
 
   cleanupUserFromRoom(userId: string, roomId: string): void {
     try {
-      // Get user's transports in this room
       const userTransportIds = this.userTransports.get(userId);
       if (userTransportIds) {
-        // Only iterate through user's transports, not all transports
         for (const transportId of userTransportIds) {
           const meta = this.transportMeta.get(transportId);
           if (meta && meta.roomId === roomId) {
@@ -447,11 +450,8 @@ class MediaSoupManager {
           }
         }
       }
-
-      // Get user's producers in this room
       const userProducerIds = this.userProducers.get(userId);
       if (userProducerIds) {
-        // Only iterate through user's producers, not all producers
         for (const producerId of userProducerIds) {
           const meta = this.producerMeta.get(producerId);
           if (meta && meta.roomId === roomId) {
@@ -464,8 +464,10 @@ class MediaSoupManager {
     }
   }
 
-  private cleanupRoom(roomId: string): void {
+  cleanupRoom(roomId: string): void {
     try {
+      console.log(`Cleaning up room: ${roomId}`);
+
       // Clean up all transports in room
       const roomTransportIds = this.roomTransports.get(roomId);
       if (roomTransportIds) {
@@ -491,6 +493,8 @@ class MediaSoupManager {
       // Clean up collections
       this.roomTransports.delete(roomId);
       this.roomProducers.delete(roomId);
+
+      console.log(`Room ${roomId} cleaned up successfully`);
     } catch (error) {
       console.error("Error cleaning up room:", error);
     }

@@ -4,6 +4,7 @@ interface CreateConsumerRequestDto {
   roomId: string;
   participantId: string;
   userId: string;
+  userName: string;
   transportId: string;
   producerId: string;
   kind: any;

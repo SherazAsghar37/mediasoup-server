@@ -17,6 +17,8 @@ import {
   resumeChannel,
   createProducerChannel,
   createConsumerChannel,
+  userDisconnectChannel,
+  sessionEndChannel,
 } from "./configs/redis_config";
 import { MediaKind } from "mediasoup/types";
 import { CreateProducerRequestDto } from "./@types/CreateProducerRequestDto";
@@ -29,7 +31,7 @@ export default class RedisManager {
     this.mediaSoupManager = new MediaSoupManager();
     console.log("Redis Manager initialized");
 
-    redisSubscriber.subscribe(createRouterChannel, Utils.onSubscription);
+    // redisSubscriber.subscribe(createRouterChannel, Utils.onSubscription);
     redisSubscriber.subscribe(createSendTransportChannel, Utils.onSubscription);
     redisSubscriber.subscribe(createRecvTransportChannel, Utils.onSubscription);
     redisSubscriber.subscribe(
@@ -43,12 +45,14 @@ export default class RedisManager {
 
     redisSubscriber.subscribe(pauseChannel, Utils.onSubscription);
     redisSubscriber.subscribe(resumeChannel, Utils.onSubscription);
+    redisSubscriber.subscribe(userDisconnectChannel, Utils.onSubscription);
+    redisSubscriber.subscribe(sessionEndChannel, Utils.onSubscription);
 
     redisSubscriber.on("message", (channel, message) => {
       switch (channel) {
-        case createRouterChannel:
-          this.onCreateRouter(message);
-          break;
+        // case createRouterChannel:
+        //   this.onCreateRouter(message);
+        //   break;
         case getRouterRtpCapabilitiesChannel:
           this.onGetRouterRtpCapabilities(message);
           break;
@@ -73,27 +77,24 @@ export default class RedisManager {
         case pauseChannel:
           this.onPauseConsumer(message);
           break;
+        case userDisconnectChannel:
+          this.onUserDisconnect(message);
+          break;
+        case sessionEndChannel:
+          this.onSessionEnd(message);
+          break;
       }
     });
-  }
-
-  async onCreateRouter(message: string) {
-    try {
-      console.log("onCreateRouter", message);
-      const data: CreateRouterRequestDto = JSON.parse(message);
-      const router = await this.mediaSoupManager.createRouter(data.roomId);
-    } catch (error) {
-      console.error("Error in onCreateRouter:", error);
-    }
   }
 
   async onGetRouterRtpCapabilities(message: string) {
     try {
       console.log("onGetRouterRtpCapabilities", message);
       const data: GetRTPCapabilitiesRequestDto = JSON.parse(message);
-      const rtpCapabilities = this.mediaSoupManager.getRouterCapabilities(
+      const rtpCapabilities = await this.mediaSoupManager.getRouterCapabilities(
         data.roomId
       );
+      console.log("rtpCapabilities", rtpCapabilities);
       redisPublisher.publish(
         responseGetRTPCapabilitiesChannel,
         JSON.stringify({
@@ -218,6 +219,8 @@ export default class RedisManager {
         responseCreateConsumerChannel,
         JSON.stringify({
           userId: data.userId,
+          roomId: data.roomId,
+          userName: data.userName,
           id: response.id,
           participantId: data.participantId,
           producerId: response.producerId,
@@ -248,6 +251,30 @@ export default class RedisManager {
       await this.mediaSoupManager.pauseConsumer(data.consumerId);
     } catch (error) {
       console.error("Error in onPauseConsumer:", error);
+    }
+  }
+
+  async onUserDisconnect(message: string) {
+    try {
+      console.log("onUserDisconnect", message);
+      const data: UserDisconnectRequestDto = JSON.parse(message);
+      await this.mediaSoupManager.cleanupUserFromRoom(data.userId, data.roomId);
+    } catch (error) {
+      console.error("Error in onUserDisconnect:", error);
+    }
+  }
+
+  async onSessionEnd(message: string) {
+    try {
+      console.log("onSessionEnd", message);
+      const data: SessionEndRequestDto = JSON.parse(message);
+
+      // Close all transports and remove the room completely
+      await this.mediaSoupManager.cleanupRoom(data.roomId);
+
+      console.log(`Session ended and room ${data.roomId} removed completely`);
+    } catch (error) {
+      console.error("Error in onSessionEnd:", error);
     }
   }
 }

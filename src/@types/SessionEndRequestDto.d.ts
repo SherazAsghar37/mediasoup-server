@@ -1,0 +1,3 @@
+interface SessionEndRequestDto {
+  roomId: string;
+}
